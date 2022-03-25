@@ -96,11 +96,13 @@ int main(){
     for(size_t i = 0; i < 10000; i++){
         net.process_batch(0.1,batches.at(i%10));
         if(i%1000 == 0){
-            net.set_input(mat);
-            net.feedforward();
-            std::cout << "-------------------------\n" <<net.calculate_cost(expected) << std::endl;
-            Matrix out = net.get_output();
-            std::cout << "-------------------------\n" <<out.transpose().str()<< "\n-------------------------" << std::endl;
+            float total = 0;
+            for(size_t i = 0; i < batch.size(); i++){
+                net.set_input(batch[i].first);
+                net.feedforward();
+                total += net.calculate_cost(batch[i].second);
+            }
+            std::cout << "-------------------------\naverage error: " << total / batch.size() << std::endl;
         }
     }
 
