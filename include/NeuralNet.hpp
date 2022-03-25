@@ -25,7 +25,7 @@ class NeuralNet{
         const Matrix& get_layer_weights(size_t n_layer);
         const Matrix& get_layer_bias(size_t n_layer);
         std::string to_str();
-        void from_str(const std::string);
+        void from_str(const std::string& str);
     private:
         std::vector<Matrix> neuron_layers;
         std::vector<Matrix> weight_layers;

@@ -67,6 +67,7 @@ void generate_batches(const std::vector<std::vector<Matrix>>& data, size_t batch
 }
 
 int main(){
+
     std::vector<std::vector<Matrix>> data({});
     std::vector<TrainingBatch> batches;
 

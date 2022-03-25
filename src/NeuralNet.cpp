@@ -154,39 +154,25 @@ void NeuralNet::backpropagate(const Matrix& input, const Matrix& desired)
         intermediates.push_back(intermediate);
     }
 
-    for(size_t i = 0; i < intermediates.size(); i++){
-        //std::cout << "z " << i << " shape: " << intermediates[i].shape_str() << std::endl;
-    }
 
     // actual backward propagation
     Matrix sig_der(intermediates.back());
     sigmoid_derivative(sig_der);
     Matrix delta = (neuron_layers.back() - desired) * sig_der;
-    //std::cout << "delta shape: " << delta.shape_str() << std::endl;
 
     bias_delta.back() = delta;
-    //std::cout << "delta bias 2 shape: " << bias_delta.back().shape_str() << std::endl;
     weight_delta.back() = delta.dot(neuron_layers[neuron_layers.size()-2].transpose());
-    //std::cout << "delta weight 2 shape: " << weight_delta.back().shape_str() << std::endl;
     
     for(size_t n_layer = neuron_layers.size()-2; n_layer >= 1; n_layer--)
     {
-        //std::cout << "accesing z at " << n_layer-1 << std::endl;
         Matrix intermediate(intermediates[n_layer-1]);
-        // //std::cout << "accesing z at " << n_layer << std::endl;
-        // Matrix intermediate(intermediates[n_layer]);
         sig_der = intermediate;
         sigmoid_derivative(sig_der);
 
-        //std::cout << "z " << n_layer << " shape: " << intermediate.shape_str() << std::endl;
-        //std::cout << "weight " << n_layer + 1 << " shape: " << weight_layers[n_layer+1].shape_str() << std::endl;
         delta = weight_layers[n_layer+1].transpose().dot(delta) * sig_der;
-        //std::cout << "delta shape: " << delta.shape_str() << std::endl;
         bias_delta[n_layer] = delta;
-        //std::cout << "bias delta " << n_layer << " shape: " << bias_delta[n_layer].shape_str() << std::endl;
 
         weight_delta[n_layer] = delta.dot(neuron_layers[n_layer-1].transpose());
-        //std::cout << "weight delta " << n_layer << " shape: " << weight_delta[n_layer].shape_str() << std::endl;
     }
 }
 
@@ -227,10 +213,129 @@ const Matrix& NeuralNet::get_layer_bias(size_t n_layer)
 
 std::string NeuralNet::to_str()
 {
-    //TODO implement
+    std::string str("");
+
+    // structure info
+    str += "structure ";
+    for(const auto& layer : neuron_layers)
+    {
+        str += std::to_string(layer.get_height());
+        if(&layer == &neuron_layers.back())
+        {
+            str += "\n";
+        }
+        else
+        {
+            str += " ";
+        }
+    }
+
+    // weight data
+    for(size_t n_layer = 0; n_layer < weight_layers.size(); n_layer++)
+    {
+        str += "weight " + std::to_string(n_layer);
+        for(const auto& value : weight_layers.at(n_layer).get_data())
+        {
+            str += " " + std::to_string(value);
+        }
+        str += "\n";
+    }
+
+    // bias data
+    for(size_t n_layer = 0; n_layer < bias_layers.size(); n_layer++)
+    {
+        str += "bias " + std::to_string(n_layer);
+        for(const auto& value : bias_layers.at(n_layer).get_data())
+        {
+            str += " " + std::to_string(value);
+        }
+        str += "\n";
+    }
+
+    return str;
 }
 
-void NeuralNet::from_str(const std::string)
+void NeuralNet::from_str(const std::string& str)
 {
-    //TODO implement
+    std::string buf("");
+
+    bool done = false;
+
+    
+    for(size_t n_char = 0; n_char < str.size(); n_char++)
+    {
+        buf += str.at(n_char);
+
+        // structure info
+        if(buf == "structure "){
+            buf = "";
+            while(str.at(n_char) != '\n'){
+                if(str.at(n_char) == ' '){
+                    if(buf.size() > 0){
+                        size_t layer_size = std::stoi(buf);
+                        add_layer(layer_size);
+                    }
+                    buf = "";
+                }
+                buf += str.at(n_char);
+                n_char++;
+            }
+
+            if(buf.size() > 0){
+                size_t layer_size = std::stoi(buf);
+                add_layer(layer_size);
+            }
+            buf = "";
+        }
+
+        // weight info
+        if(buf == "weight "){
+            buf = "";
+            n_char++;
+            while(str.at(n_char) != ' '){
+                buf += str.at(n_char);
+                n_char++;
+            }
+            size_t layer_index = std::stoi(buf);
+            buf = "";
+            std::vector<float> layer_data;
+            while(str.at(n_char) != '\n'){
+                if(str.at(n_char) == ' '){
+                    if(buf.size() > 0){
+                        layer_data.push_back(std::stof(buf));
+                    }
+                    buf = "";
+                }
+                buf += str.at(n_char);
+                n_char++;
+            }
+            weight_layers.at(layer_index).set_data(layer_data);
+            buf = "";
+        }
+
+        // bias info
+        if(buf == "bias "){
+            buf = "";
+            n_char++;
+            while(str.at(n_char) != ' '){
+                buf += str.at(n_char);
+                n_char++;
+            }
+            size_t layer_index = std::stoi(buf);
+            buf = "";
+            std::vector<float> layer_data;
+            while(str.at(n_char) != '\n'){
+                if(str.at(n_char) == ' '){
+                    if(buf.size() > 0){
+                        layer_data.push_back(std::stof(buf));
+                    }
+                    buf = "";
+                }
+                buf += str.at(n_char);
+                n_char++;
+            }
+            bias_layers.at(layer_index).set_data(layer_data);
+            buf = "";
+        }
+    }
 }

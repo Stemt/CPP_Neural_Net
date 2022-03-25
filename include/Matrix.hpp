@@ -33,6 +33,7 @@ class Matrix{
         size_t get_width() const;
         size_t get_height() const;
         std::vector<float>& get_data();
+        void set_data(const std::vector<float>& new_data);
         // Matrix get_column(size_t x) const;
         // Matrix get_row(size_t y) const;
         void reshape(size_t new_width, size_t new_height);

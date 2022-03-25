@@ -226,6 +226,11 @@ std::vector<float>& Matrix::get_data()
     return data;
 }
 
+void Matrix::set_data(const std::vector<float>& new_data)
+{
+    data = new_data;
+}
+
 void Matrix::reshape(size_t new_width, size_t new_height)
 {
     if(new_width * new_height != width * height){
@@ -260,11 +265,15 @@ void Matrix::from_str(const std::string& str)
     height = 0;
     data.clear();
     std::string num_buf("");
+    std::cout <<'"' + str + '"' << "---" << std::endl;
 
     for(size_t n_char = 0; n_char < str.size(); n_char++)
     {
         if(str.at(n_char) == ' ')
         {
+            if(num_buf.size() == 0){
+                continue;
+            }
             if(height == 0){
                 width++;
             }
@@ -273,6 +282,12 @@ void Matrix::from_str(const std::string& str)
         }
         else if(str.at(n_char) == '\n')
         {
+            if(num_buf.size() == 0){
+                continue;
+            }
+            if(height == 0){
+                width++;
+            }
             height++;
             data.push_back(std::stof(num_buf));
             num_buf = "";
